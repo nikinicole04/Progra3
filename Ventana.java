@@ -4,68 +4,90 @@ import java.awt.event.ActionListener;
 
 public class Ventana {
     private JPanel principal;
-    private JComboBox cboMarca;
-    private JTextField txtAnio;
-    private JButton btnEncolar;
-    private JButton btnDesencolar;
-    private JTextArea txtListado;
-    private JLabel lblPago;
-    private ColaAutos autos = new ColaAutos();
+    private JTextField txtTexto;
+    private JButton btnpush;
+    private JButton btnpop;
+    private JTextArea txtMostrar;
+    private JLabel lblTexto;
+    private JButton btnCima;
+
+    private Pila data = new Pila();
 
     public Ventana() {
-        btnEncolar.addActionListener(new ActionListener() {
+        // Inicialización de los componentes por esta vez decidí hacer la gráfica manualmente
+        principal = new JPanel();
+        txtTexto = new JTextField(20);
+        btnpush = new JButton("Push");
+        btnpop = new JButton("Pop");
+        txtMostrar = new JTextArea(10, 30);
+        lblTexto = new JLabel("Texto a agregar:");
+        btnCima = new JButton("Ver Cima");
+
+        // Agregar los componentes al panel se hace manualmente
+        principal.add(lblTexto);
+        principal.add(txtTexto);
+        principal.add(btnpush);
+        principal.add(btnpop);
+        principal.add(txtMostrar);
+        principal.add(btnCima);
+
+        // Acción para el botón "Push"
+        btnpush.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String texto = txtTexto.getText().trim(); // Obtenemos el texto
+                if (!texto.isEmpty()) {
+                    try {
+                        data.push(texto); // Intentamos agregar a la pila
+                        txtTexto.setText(""); // Limpiamos el campo de texto
+                        txtMostrar.setText(data.toString()); // Actualizamos la visualización
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(null, ex.getMessage());
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Por favor, escribe un texto para agregar.");
+                }
+            }
+        });
+
+        // Acción para el botón "Pop"
+        btnpop.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String marca = cboMarca.getSelectedItem().toString();
-                    String anioTexto = txtAnio.getText().trim();
-
-                    if (anioTexto.isEmpty()) {
-                        throw new IllegalArgumentException("Debes ingresar un año");
-                    }
-                    int anio;
-                    // Validar que el año sea un número válido
-                    try {
-                        anio = Integer.parseInt(anioTexto);
-                    } catch (NumberFormatException ex) {
-                        // Lanzamos excepción más precisa si el número no es válido
-                        throw new IllegalArgumentException("El año debe ser un número válido");
-                    }
-                    // Validar que el año no sea mayor al actual (2025)
-                    if (anio > 2025) {
-                        throw new IllegalArgumentException("El año no puede ser mayor a 2025");
-                    }
-                    autos.encolar(new Auto(marca, anio));
-                    txtListado.setText(autos.listarTodos());
-                } catch (IllegalArgumentException ex) {
+                    String eliminado = data.pop(); // Quitamos el último elemento
+                    JOptionPane.showMessageDialog(null, "Se eliminó: " + eliminado);
+                    txtMostrar.setText(data.toString()); // Mostramos pila actualizada
+                } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null, ex.getMessage());
                 }
             }
         });
 
+        // Acción para el botón "Cima"
+        btnCima.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String cima = data.cima(); // Mostramos el último elemento sin quitarlo
+                    JOptionPane.showMessageDialog(null, "En la cima está: " + cima);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, ex.getMessage());
+                }
+            }
+        });
+    }
 
-                btnDesencolar.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        try{
-                            Auto atendido=autos.desencolar();
-                            int anio = atendido.getAnio();
-                            // Calcular el pago: $50 base + $50 por cada año de antigüedad
-                            int pago = 50 + (2025 - anio) * 50;
-                            lblPago.setText("Último auto atendido: \n"  + atendido.toString() + "\t Pago: \n$" + pago);
-                            txtListado.setText(autos.listarTodos());
-                        } catch (Exception ex){
-                            JOptionPane.showMessageDialog(null, ex.getMessage());
-                        }
-
-                    }
-                });
+    // Metodo para obtener el panel con los componentes
+    public JPanel getPanel() {
+        return principal;
     }
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Ventana");
-        frame.setContentPane(new Ventana().principal);
+        JFrame frame = new JFrame("Gestor de Pila");
+        frame.setContentPane(new Ventana().getPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
+        frame.pack(); // Ajusta el tamaño de la ventana
+        frame.setLocationRelativeTo(null); // Centra la ventana
+        frame.setVisible(true); // Muestra la ventana
     }
 }
